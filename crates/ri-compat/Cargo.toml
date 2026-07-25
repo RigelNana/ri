@@ -9,8 +9,8 @@ repository.workspace = true
 
 [dependencies]
 chrono.workspace = true
-ri-rpc = { path = "../ri-rpc" }
-ri-session = { path = "../ri-session" }
+ri-rpc.workspace = true
+ri-session.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

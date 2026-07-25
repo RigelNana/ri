@@ -11,12 +11,12 @@ async-trait.workspace = true
 chrono.workspace = true
 futures.workspace = true
 indexmap.workspace = true
-ri-agent = { path = "../ri-agent" }
-ri-ai = { path = "../ri-ai" }
-ri-ext = { path = "../ri-ext" }
+ri-agent.workspace = true
+ri-ai.workspace = true
+ri-ext.workspace = true
 ri-protocol-core.workspace = true
-ri-session = { path = "../ri-session" }
-ri-tools = { path = "../ri-tools" }
+ri-session.workspace = true
+ri-tools.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -26,7 +26,7 @@ tracing.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
-ri-testkit = { path = "../ri-testkit" }
+ri-testkit.workspace = true
 tempfile.workspace = true
 
 [lints]

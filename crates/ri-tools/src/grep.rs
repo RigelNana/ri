@@ -100,25 +100,50 @@ struct Match {
     line_text: Option<String>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct RipgrepCollector {
     pending: Vec<u8>,
     matches: Vec<Match>,
+    root: PathBuf,
+    glob: Option<GlobMatcher>,
 }
 
 impl RipgrepCollector {
+    fn new(root: &Path, glob: Option<GlobMatcher>) -> Self {
+        Self {
+            pending: Vec::new(),
+            matches: Vec::new(),
+            root: root.to_owned(),
+            glob,
+        }
+    }
+
     fn append(&mut self, data: &[u8], limit: usize) -> bool {
         self.pending.extend_from_slice(data);
         while let Some(newline) = self.pending.iter().position(|byte| *byte == b'\n') {
             let line: Vec<u8> = self.pending.drain(..=newline).collect();
-            if let Some(found) = parse_ripgrep_match(&line[..line.len() - 1]) {
-                self.matches.push(found);
-                if self.matches.len() >= limit {
-                    return true;
-                }
+            if parse_ripgrep_match(&line[..line.len() - 1])
+                .is_some_and(|found| self.push(found, limit))
+            {
+                return true;
             }
         }
         false
+    }
+
+    fn push(&mut self, found: Match, limit: usize) -> bool {
+        let relative = relative_display(&found.path, &self.root);
+        if self.glob.as_ref().is_some_and(|glob| {
+            !glob.is_match(&relative)
+                && !found
+                    .path
+                    .file_name()
+                    .is_some_and(|name| glob.is_match(name))
+        }) {
+            return false;
+        }
+        self.matches.push(found);
+        self.matches.len() >= limit
     }
 }
 
@@ -151,17 +176,7 @@ pub async fn grep(
     let limit = input.limit.unwrap_or(DEFAULT_LIMIT).max(1);
 
     let external = if let Some(rg) = env.which("rg").await? {
-        match grep_with_rg(
-            env,
-            rg,
-            &search_path,
-            is_directory,
-            &input,
-            limit,
-            cancellation,
-        )
-        .await
-        {
+        match grep_with_rg(env, rg, &search_path, &input, limit, cancellation).await {
             Ok(matches) => Some((matches, SearchBackend::Ripgrep)),
             Err(ToolError::Environment(
                 EnvError::Unsupported(_) | EnvError::ExecutableNotFound(_),
@@ -289,12 +304,12 @@ async fn grep_with_rg(
     env: &dyn ExecutionEnv,
     rg: PathBuf,
     search_path: &Path,
-    is_directory: bool,
     input: &GrepInput,
     limit: usize,
     cancellation: &CancellationToken,
 ) -> Result<Vec<Match>, ToolError> {
-    let collector = Arc::new(Mutex::new(RipgrepCollector::default()));
+    let glob = input.glob.as_deref().map(build_glob).transpose()?;
+    let collector = Arc::new(Mutex::new(RipgrepCollector::new(search_path, glob)));
     let stderr = Arc::new(Mutex::new(Vec::new()));
     let process_cancellation = CancellationToken::new();
     let sink: OutputSink = {
@@ -324,23 +339,13 @@ async fn grep_with_rg(
         "--line-number".to_owned(),
         "--color=never".to_owned(),
         "--hidden".to_owned(),
+        "--no-require-git".to_owned(),
     ];
-    let repository_root = if is_directory {
-        search_path
-    } else {
-        search_path.parent().unwrap_or(search_path)
-    };
-    if !inside_git_repository(env, repository_root).await {
-        args.push("--no-require-git".to_owned());
-    }
     if input.ignore_case {
         args.push("--ignore-case".to_owned());
     }
     if input.literal {
         args.push("--fixed-strings".to_owned());
-    }
-    if let Some(glob) = &input.glob {
-        args.extend(["--glob".to_owned(), glob.clone()]);
     }
     args.extend([
         "--".to_owned(),
@@ -376,7 +381,7 @@ async fn grep_with_rg(
     if !collector.pending.is_empty() && collector.matches.len() < limit {
         let pending = std::mem::take(&mut collector.pending);
         if let Some(found) = parse_ripgrep_match(&pending) {
-            collector.matches.push(found);
+            collector.push(found, limit);
         }
     }
     let reached_limit = collector.matches.len() >= limit;
@@ -533,15 +538,4 @@ async fn load_lines(
     );
     cache.insert(path.to_owned(), lines.clone());
     lines
-}
-
-async fn inside_git_repository(env: &dyn ExecutionEnv, root: &Path) -> bool {
-    let mut current = Some(root);
-    while let Some(path) = current {
-        if env.metadata(&path.join(".git")).await.is_ok() {
-            return true;
-        }
-        current = path.parent();
-    }
-    false
 }

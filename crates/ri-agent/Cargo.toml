@@ -11,7 +11,7 @@ async-trait.workspace = true
 futures.workspace = true
 indexmap.workspace = true
 parking_lot.workspace = true
-ri-ai = { path = "../ri-ai" }
+ri-ai.workspace = true
 ri-protocol-core.workspace = true
 schemars.workspace = true
 serde.workspace = true
@@ -23,7 +23,7 @@ tracing.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
-ri-testkit = { path = "../ri-testkit" }
+ri-testkit.workspace = true
 
 [lints]
 workspace = true

@@ -258,9 +258,9 @@ impl ExecutionEnv for LocalExecutionEnv {
         let Some(path) = std::env::var_os("PATH") else {
             return Ok(None);
         };
-        let mut names = vec![executable.to_owned()];
         #[cfg(windows)]
-        {
+        let names = {
+            let mut names = vec![executable.to_owned()];
             if Path::new(executable).extension().is_none() {
                 let extensions =
                     std::env::var("PATHEXT").unwrap_or_else(|_| ".COM;.EXE;.BAT;.CMD".to_owned());
@@ -271,7 +271,10 @@ impl ExecutionEnv for LocalExecutionEnv {
                         .map(|extension| format!("{executable}{extension}")),
                 );
             }
-        }
+            names
+        };
+        #[cfg(not(windows))]
+        let names = vec![executable.to_owned()];
 
         for directory in std::env::split_paths(&path) {
             for name in &names {

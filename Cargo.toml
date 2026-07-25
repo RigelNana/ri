@@ -58,22 +58,22 @@ quote = "1"
 rand = "0.9"
 regex = "1"
 reqwest = { version = "0.13.4", default-features = false, features = ["brotli", "deflate", "gzip", "http2", "json", "native-tls", "query", "stream"] }
-ri = { path = "crates/ri" }
-ri-agent = { path = "crates/ri-agent" }
-ri-ai = { path = "crates/ri-ai" }
-ri-compat = { path = "crates/ri-compat" }
-ri-ext = { path = "crates/ri-ext" }
-ri-ext-wasm = { path = "crates/ri-ext-wasm" }
-ri-harness = { path = "crates/ri-harness" }
-ri-macros = { path = "crates/ri-macros" }
-ri-protocol-core = { path = "crates/ri-protocol-core" }
-ri-rpc = { path = "crates/ri-rpc" }
-ri-sdk = { path = "crates/ri-sdk" }
-ri-session = { path = "crates/ri-session" }
-ri-storage-sqlite = { path = "crates/ri-storage-sqlite" }
-ri-testkit = { path = "crates/ri-testkit" }
-ri-tools = { path = "crates/ri-tools" }
-ri-tui = { path = "crates/ri-tui" }
+ri = { path = "crates/ri", version = "0.1.0" }
+ri-agent = { path = "crates/ri-agent", version = "0.1.0" }
+ri-ai = { path = "crates/ri-ai", version = "0.1.0" }
+ri-compat = { path = "crates/ri-compat", version = "0.1.0" }
+ri-ext = { path = "crates/ri-ext", version = "0.1.0" }
+ri-ext-wasm = { path = "crates/ri-ext-wasm", version = "0.1.0" }
+ri-harness = { path = "crates/ri-harness", version = "0.1.0" }
+ri-macros = { path = "crates/ri-macros", version = "0.1.0" }
+ri-protocol-core = { path = "crates/ri-protocol-core", version = "0.1.0" }
+ri-rpc = { path = "crates/ri-rpc", version = "0.1.0" }
+ri-sdk = { path = "crates/ri-sdk", version = "0.1.0" }
+ri-session = { path = "crates/ri-session", version = "0.1.0" }
+ri-storage-sqlite = { path = "crates/ri-storage-sqlite", version = "0.1.0" }
+ri-testkit = { path = "crates/ri-testkit", version = "0.1.0" }
+ri-tools = { path = "crates/ri-tools", version = "0.1.0" }
+ri-tui = { path = "crates/ri-tui", version = "0.1.0" }
 rusqlite = { version = "0.40.1", features = ["bundled", "chrono", "serde_json", "uuid"] }
 schemars = { version = "1", features = ["chrono04", "uuid1"] }
 semver = "1"

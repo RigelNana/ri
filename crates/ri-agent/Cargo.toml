@@ -1,0 +1,29 @@
+[package]
+name = "ri-agent"
+description = "Event-driven agent loop and tool scheduler"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+futures.workspace = true
+indexmap.workspace = true
+parking_lot.workspace = true
+ri-ai = { path = "../ri-ai" }
+ri-protocol-core.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+ri-testkit = { path = "../ri-testkit" }
+
+[lints]
+workspace = true

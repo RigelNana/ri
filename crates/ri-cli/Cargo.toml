@@ -1,0 +1,48 @@
+[package]
+name = "ri-cli"
+description = "Interactive, print, JSON, and RPC command-line interface for ri"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "ri"
+path = "src/main.rs"
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[features]
+default = ["interactive", "rpc", "sqlite"]
+interactive = ["dep:ri-tui"]
+rpc = ["dep:ri-rpc"]
+sqlite = ["ri-sdk/sqlite"]
+wasm = ["ri-sdk/wasm"]
+full = ["interactive", "rpc", "sqlite", "wasm"]
+
+[dependencies]
+async-trait.workspace = true
+base64.workspace = true
+clap.workspace = true
+ri-agent.workspace = true
+ri-ai.workspace = true
+ri-compat.workspace = true
+ri-ext.workspace = true
+ri-harness.workspace = true
+ri-rpc = { workspace = true, optional = true }
+ri-sdk.workspace = true
+ri-session.workspace = true
+ri-tui = { workspace = true, optional = true }
+ri-tools.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["io-std"] }
+tokio-util.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[lints]
+workspace = true

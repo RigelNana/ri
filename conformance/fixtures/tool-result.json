@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "operation": "normalize",
+  "value": {
+    "toolCallId": "call-real-1",
+    "toolName": "read",
+    "content": [
+      {
+        "type": "text",
+        "text": "line one\r\nline two"
+      }
+    ],
+    "details": {
+      "path": "C:\\workspace\\project\\README.md",
+      "truncated": false
+    },
+    "isError": false
+  }
+}

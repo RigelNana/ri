@@ -1,0 +1,407 @@
+package ri:extension@1.0.0;
+
+interface types {
+    enum capability-kind {
+        filesystem,
+        network,
+        process,
+        ui,
+        session,
+        provider,
+    }
+
+    record capability-request {
+        kind: capability-kind,
+        scope-json: string,
+        required: bool,
+    }
+
+    variant capability-error {
+        denied(string),
+        invalid-scope(string),
+        invalid-request(string),
+        unavailable(string),
+        limit-exceeded(string),
+        failed(string),
+    }
+
+    variant extension-error {
+        invalid-argument(string),
+        invalid-state(string),
+        permission-denied(string),
+        not-found(string),
+        unavailable(string),
+        failed(string),
+    }
+
+    enum event-kind {
+        activated,
+        deactivating,
+        configuration-changed,
+        session-opened,
+        session-closed,
+        provider-changed,
+        tool-completed,
+        command-invoked,
+        custom,
+    }
+
+    record extension-event {
+        kind: event-kind,
+        topic: string,
+        payload-json: string,
+        sequence: u64,
+    }
+
+    record tool-registration {
+        id: string,
+        title: string,
+        description: string,
+        input-schema-json: string,
+        output-schema-json: option<string>,
+    }
+
+    enum command-placement {
+        palette,
+        context-menu,
+        slash-menu,
+        hidden,
+    }
+
+    record command-registration {
+        id: string,
+        title: string,
+        description: string,
+        placement: command-placement,
+        argument-schema-json: option<string>,
+    }
+
+    enum view-location {
+        sidebar,
+        panel,
+        editor,
+        modal,
+    }
+
+    record view-registration {
+        id: string,
+        title: string,
+        location: view-location,
+    }
+
+    enum view-node-kind {
+        container,
+        text,
+        markdown,
+        button,
+        input,
+        select,
+        image,
+        spacer,
+    }
+
+    record view-property {
+        name: string,
+        value-json: string,
+    }
+
+    enum action-kind {
+        activate,
+        change,
+        submit,
+        dismiss,
+        custom,
+    }
+
+    record action-binding {
+        action-id: string,
+        kind: action-kind,
+        payload-json: string,
+    }
+
+    record view-node {
+        id: u64,
+        kind: view-node-kind,
+        text: option<string>,
+        properties: list<view-property>,
+        actions: list<action-binding>,
+        children: list<u64>,
+    }
+
+    record view {
+        root: u64,
+        nodes: list<view-node>,
+    }
+
+    record extension-descriptor {
+        id: string,
+        name: string,
+        version: string,
+        abi-version: string,
+        description: option<string>,
+        capabilities: list<capability-request>,
+        tools: list<tool-registration>,
+        commands: list<command-registration>,
+        views: list<view-registration>,
+    }
+
+    record activation-context {
+        session-id: option<string>,
+        workspace-uri: option<string>,
+        configuration-json: string,
+    }
+
+    record activation-result {
+        subscriptions: list<event-kind>,
+        state-json: option<string>,
+    }
+
+    enum deactivate-reason {
+        disabled,
+        reload,
+        shutdown,
+        failure,
+    }
+
+    record tool-invocation {
+        id: string,
+        input-json: string,
+        context-json: string,
+    }
+
+    record tool-result {
+        content-json: string,
+        is-error: bool,
+    }
+
+    record command-invocation {
+        id: string,
+        arguments-json: string,
+        context-json: string,
+    }
+
+    record command-result {
+        output-json: string,
+        refresh-views: list<string>,
+    }
+
+    record view-request {
+        id: string,
+        context-json: string,
+    }
+
+    record action-event {
+        view-id: string,
+        action-id: string,
+        kind: action-kind,
+        payload-json: string,
+    }
+
+    record action-result {
+        output-json: string,
+        replacement-view: option<view>,
+    }
+}
+
+interface filesystem {
+    use types.{capability-error};
+
+    enum filesystem-access {
+        read,
+        read-write,
+    }
+
+    record filesystem-scope {
+        roots: list<string>,
+        access: filesystem-access,
+        max-read-bytes: u64,
+        max-write-bytes: u64,
+    }
+
+    enum entry-kind {
+        file,
+        directory,
+        symlink,
+        other,
+    }
+
+    record directory-entry {
+        path: string,
+        kind: entry-kind,
+        size: u64,
+    }
+
+    resource filesystem {
+        constructor(scope: filesystem-scope) -> result<filesystem, capability-error>;
+        read: func(path: string) -> result<list<u8>, capability-error>;
+        write: func(path: string, contents: list<u8>) -> result<_, capability-error>;
+        list-directory: func(path: string) -> result<list<directory-entry>, capability-error>;
+        remove: func(path: string) -> result<_, capability-error>;
+    }
+}
+
+interface network {
+    use types.{capability-error};
+
+    record network-scope {
+        origins: list<string>,
+        methods: list<string>,
+        max-response-bytes: u64,
+    }
+
+    record header {
+        name: string,
+        value: string,
+    }
+
+    record network-response {
+        status: u16,
+        headers: list<header>,
+        body: list<u8>,
+    }
+
+    resource network {
+        constructor(scope: network-scope) -> result<network, capability-error>;
+        request: func(
+            method: string,
+            url: string,
+            headers: list<header>,
+            body: option<list<u8>>,
+        ) -> result<network-response, capability-error>;
+    }
+}
+
+interface process {
+    use types.{capability-error};
+
+    record process-scope {
+        programs: list<string>,
+        max-runtime-ms: u64,
+        max-output-bytes: u64,
+        allow-environment: bool,
+    }
+
+    record process-request {
+        program: string,
+        arguments: list<string>,
+        working-directory: option<string>,
+        environment: list<tuple<string, string>>,
+        stdin: option<list<u8>>,
+    }
+
+    record process-output {
+        exit-code: option<s32>,
+        stdout: list<u8>,
+        stderr: list<u8>,
+        timed-out: bool,
+    }
+
+    resource process {
+        constructor(scope: process-scope) -> result<process, capability-error>;
+        run: func(request: process-request) -> result<process-output, capability-error>;
+    }
+}
+
+interface ui {
+    use types.{capability-error};
+
+    enum ui-surface {
+        notification,
+        prompt,
+        clipboard,
+        external-uri,
+    }
+
+    record ui-scope {
+        surfaces: list<ui-surface>,
+    }
+
+    enum notification-level {
+        info,
+        warning,
+        error,
+    }
+
+    record prompt-option {
+        id: string,
+        label: string,
+    }
+
+    resource ui {
+        constructor(scope: ui-scope) -> result<ui, capability-error>;
+        notify: func(level: notification-level, message: string) -> result<_, capability-error>;
+        prompt: func(message: string, options: list<prompt-option>) -> result<option<string>, capability-error>;
+        set-clipboard: func(text: string) -> result<_, capability-error>;
+        open-uri: func(uri: string) -> result<_, capability-error>;
+    }
+}
+
+interface session {
+    use types.{capability-error};
+
+    record session-scope {
+        namespaces: list<string>,
+        writable: bool,
+    }
+
+    resource session {
+        constructor(scope: session-scope) -> result<session, capability-error>;
+        get: func(namespace: string, key: string) -> result<option<string>, capability-error>;
+        put: func(namespace: string, key: string, value-json: string) -> result<_, capability-error>;
+        delete: func(namespace: string, key: string) -> result<_, capability-error>;
+    }
+}
+
+interface provider {
+    use types.{capability-error};
+
+    record provider-scope {
+        providers: list<string>,
+        models: list<string>,
+        allow-streaming: bool,
+    }
+
+    resource provider {
+        constructor(scope: provider-scope) -> result<provider, capability-error>;
+        complete: func(request-json: string) -> result<string, capability-error>;
+        list-models: func(provider-id: option<string>) -> result<string, capability-error>;
+    }
+}
+
+interface guest {
+    use types.{
+        action-event,
+        action-result,
+        activation-context,
+        activation-result,
+        command-invocation,
+        command-result,
+        deactivate-reason,
+        extension-descriptor,
+        extension-error,
+        extension-event,
+        tool-invocation,
+        tool-result,
+        view,
+        view-request,
+    };
+
+    descriptor: func() -> result<extension-descriptor, extension-error>;
+    activate: func(context: activation-context) -> result<activation-result, extension-error>;
+    on-event: func(event: extension-event) -> result<_, extension-error>;
+    invoke-tool: func(invocation: tool-invocation) -> result<tool-result, extension-error>;
+    invoke-command: func(invocation: command-invocation) -> result<command-result, extension-error>;
+    render-view: func(request: view-request) -> result<view, extension-error>;
+    handle-action: func(event: action-event) -> result<action-result, extension-error>;
+    deactivate: func(reason: deactivate-reason) -> result<_, extension-error>;
+}
+
+world extension {
+    import filesystem;
+    import network;
+    import process;
+    import ui;
+    import session;
+    import provider;
+    export guest;
+}

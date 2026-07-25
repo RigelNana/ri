@@ -1,0 +1,6 @@
+/target/
+/.ri/
+*.profraw
+*.lcov
+coverage/
+conformance/snapshots/*.actual.json

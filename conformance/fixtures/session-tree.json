@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "operation": "normalize",
+  "value": {
+    "sessionId": "session-real",
+    "cwd": "C:\\workspace\\project",
+    "entries": [
+      {
+        "id": "entry-root",
+        "parentId": null,
+        "timestamp": "2026-07-25T08:00:00Z",
+        "type": "message"
+      },
+      {
+        "id": "entry-child",
+        "parentId": "entry-root",
+        "timestamp": "2026-07-25T08:00:01Z",
+        "type": "leaf"
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+[package]
+name = "ri-macros"
+description = "Procedural macros for ri tools and extensions"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true
+
+[dev-dependencies]
+async-trait.workspace = true
+ri-agent.workspace = true
+ri-ai.workspace = true
+ri-ext.workspace = true
+schemars.workspace = true
+serde.workspace = true
+trybuild.workspace = true
+
+[lints]
+workspace = true

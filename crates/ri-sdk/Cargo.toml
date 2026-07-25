@@ -1,0 +1,38 @@
+[package]
+name = "ri-sdk"
+description = "User-facing builders and shared session runtime for ri"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = []
+sqlite = ["dep:ri-storage-sqlite"]
+wasm = ["dep:ri-ext-wasm"]
+
+[dependencies]
+async-trait.workspace = true
+ri-agent.workspace = true
+ri-ai.workspace = true
+ri-ext.workspace = true
+ri-ext-wasm = { workspace = true, optional = true }
+ri-harness.workspace = true
+ri-session.workspace = true
+ri-storage-sqlite = { workspace = true, optional = true }
+ri-tools.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+url.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+ri-testkit.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

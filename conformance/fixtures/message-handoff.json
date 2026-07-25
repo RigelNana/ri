@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "operation": "normalize",
+  "value": {
+    "id": "msg-real-1",
+    "timestamp": "2026-07-25T08:00:00.000Z",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "reasoning\r\nacross providers",
+        "signature": "provider-private"
+      },
+      {
+        "type": "toolCall",
+        "id": "call-real-1",
+        "name": "read",
+        "arguments": {
+          "path": "C:\\workspace\\src\\lib.rs"
+        }
+      }
+    ],
+    "stopReason": "toolUse"
+  }
+}

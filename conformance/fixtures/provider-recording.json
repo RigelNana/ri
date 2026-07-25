@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "operation": "normalize",
+  "value": {
+    "requestId": "req-volatile",
+    "method": "POST",
+    "path": "/v1/messages",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer secret",
+      "X-Api-Key": "secret"
+    },
+    "response": {
+      "id": "provider-message-9",
+      "usage": {
+        "input": 12,
+        "output": 4,
+        "cost": {
+          "total": 0.000042
+        }
+      }
+    },
+    "durationMs": 87
+  }
+}

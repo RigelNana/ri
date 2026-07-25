@@ -1,0 +1,182 @@
+schema: ri.conformance/v1
+
+baseline:
+  repository: ref/pi
+  commit: 518855dd502220d0c6480fb8863e2e7f8799893f
+  package_version: 0.82.0
+  expected_test_files: 343
+  authority: [source, tests, protocol-docs, examples, readme]
+
+test_inventory:
+  roots:
+    - ref/pi/packages/ai
+    - ref/pi/packages/agent
+    - ref/pi/packages/coding-agent
+    - ref/pi/packages/tui
+    - ref/pi/packages/storage/sqlite-node
+    - ref/pi/scripts
+  globs: ["**/*.test.ts", "**/*.test.mjs"]
+  output: conformance/reference-tests.json
+  require_every_test_mapped: true
+  ownership:
+    - { glob: "packages/ai/**", prefix: "ai." }
+    - { glob: "packages/agent/src/harness/**", prefix: "harness." }
+    - { glob: "packages/agent/**", prefix: "agent." }
+    - { glob: "packages/storage/sqlite-node/**", prefix: "session.sqlite." }
+    - { glob: "packages/coding-agent/test/tools/**", prefix: "tools." }
+    - { glob: "packages/coding-agent/test/extensions/**", prefix: "extensions." }
+    - { glob: "packages/coding-agent/test/rpc/**", prefix: "rpc." }
+    - { glob: "packages/coding-agent/**", prefix: "harness." }
+    - { glob: "packages/tui/**", prefix: "tui." }
+    - { glob: "scripts/**", prefix: "cli." }
+
+canonical_json:
+  encoding: utf-8
+  line_ending: lf
+  trailing_newline: false
+  unicode: nfc
+  object_keys: lexical
+  arrays: preserve
+  numbers:
+    finite: shortest-roundtrip
+    negative_zero: 0
+    non_finite: reject
+  timestamps:
+    action: replace
+    value: "<timestamp>"
+  identifiers:
+    action: map-by-first-observation
+    prefix: id
+  paths:
+    separators: slash
+    drive_letter: lowercase
+    workspace: "<workspace>"
+    home: "<home>"
+    temp: "<temp>"
+  headers:
+    names: lowercase
+    redact: [authorization, api-key, x-api-key, proxy-authorization, cookie, set-cookie]
+  volatile_fields: [duration, durationMs, elapsed, requestId, traceId]
+  usage:
+    absent_optional_fields: omit
+    cost_precision: 12
+
+gates:
+  transform: { kind: deterministic, network: false }
+  agent: { kind: scripted, network: false }
+  wire: { kind: local-protocol, network: loopback }
+  session_rpc: { kind: durable-protocol, network: false }
+  live: { kind: credential-gated, network: true }
+
+statuses:
+  allowed: [specified, implemented, passing, live-gated, blocked, out-of-scope]
+  passing_requires: [rust_test, reference, gate]
+
+runners:
+  rust: ["cargo", "run", "-p", "ri-conformance", "--", "run"]
+  reference: ["node", "conformance/reference/run.mjs"]
+  fixture_dir: conformance/fixtures
+  snapshot_dir: conformance/snapshots
+
+# Each row is an externally observable contract. `rust_test` is a stable test target,
+# not an assertion that implementation already exists.
+features:
+  - { id: ai.message.types, gate: transform, reference: ["packages/ai/src/types.ts"], rust_test: "ri_ai::message", status: specified }
+  - { id: ai.model.registry, gate: transform, reference: ["packages/ai/src/models.ts"], rust_test: "ri_ai::model::registry", status: specified }
+  - { id: ai.model.cost, gate: transform, reference: ["packages/ai/src/models.ts"], rust_test: "ri_ai::model::cost", status: specified }
+  - { id: ai.model.reasoning, gate: transform, reference: ["packages/ai/src/thinking-capabilities.ts"], rust_test: "ri_ai::model::reasoning", status: specified }
+  - { id: ai.stream.interleaving, gate: agent, reference: ["packages/ai/src/utils/event-stream.ts"], rust_test: "ri_ai::stream::interleaving", status: specified }
+  - { id: ai.stream.result, gate: agent, reference: ["packages/ai/src/utils/event-stream.ts"], rust_test: "ri_ai::stream::result", status: specified }
+  - { id: ai.stream.abort-partial, gate: wire, reference: ["packages/ai/test"], rust_test: "ri_ai::stream::abort_partial", status: specified }
+  - { id: ai.partial-json, gate: transform, reference: ["packages/ai/src/utils/json-parse.ts"], rust_test: "ri_ai::tool::partial_json", status: specified }
+  - { id: ai.tool.schema, gate: transform, reference: ["packages/ai/src/utils/tool-validation.ts"], rust_test: "ri_ai::tool::schema", status: specified }
+  - { id: ai.tool.constrained, gate: wire, reference: ["packages/ai/src/api/openai-responses.ts"], rust_test: "ri_ai::tool::constrained", status: specified }
+  - { id: ai.tool.deferred, gate: wire, reference: ["packages/ai/src/api/openai-responses.ts"], rust_test: "ri_ai::tool::deferred", status: specified }
+  - { id: ai.handoff.thinking, gate: transform, reference: ["packages/ai/src/api/transform-messages.ts"], rust_test: "ri_ai::handoff::thinking", status: specified }
+  - { id: ai.handoff.tool-ids, gate: transform, reference: ["packages/ai/src/api/transform-messages.ts"], rust_test: "ri_ai::handoff::tool_ids", status: specified }
+  - { id: ai.handoff.orphan-result, gate: transform, reference: ["packages/ai/src/api/transform-messages.ts"], rust_test: "ri_ai::handoff::orphan_result", status: specified }
+  - { id: ai.handoff.error-replay, gate: transform, reference: ["packages/ai/src/api/transform-messages.ts"], rust_test: "ri_ai::handoff::error_replay", status: specified }
+  - { id: ai.auth.precedence, gate: agent, reference: ["packages/ai/src/models.ts", "packages/ai/src/auth"], rust_test: "ri_ai::auth::precedence", status: specified }
+  - { id: ai.auth.refresh-lock, gate: agent, reference: ["packages/ai/src/auth"], rust_test: "ri_ai::auth::refresh_lock", status: specified }
+  - { id: ai.auth.no-fallback, gate: agent, reference: ["packages/ai/src/models.ts"], rust_test: "ri_ai::auth::no_fallback", status: specified }
+  - { id: ai.usage.cache-cost, gate: transform, reference: ["packages/ai/src/models.ts"], rust_test: "ri_ai::usage::cache_cost", status: specified }
+  - { id: ai.overflow.classification, gate: transform, reference: ["packages/coding-agent/src/core/agent-session.ts"], rust_test: "ri_ai::error::overflow", status: specified }
+  - { id: ai.wire.anthropic, gate: wire, reference: ["packages/ai/src/api/anthropic-messages.ts"], rust_test: "ri_ai::wire::anthropic", status: specified }
+  - { id: ai.wire.openai-completions, gate: wire, reference: ["packages/ai/src/api/openai-completions.ts"], rust_test: "ri_ai::wire::openai_completions", status: specified }
+  - { id: ai.wire.openai-responses, gate: wire, reference: ["packages/ai/src/api/openai-responses.ts"], rust_test: "ri_ai::wire::openai_responses", status: specified }
+  - { id: ai.wire.openai-codex, gate: wire, reference: ["packages/ai/src/api/openai-codex-responses.ts"], rust_test: "ri_ai::wire::openai_codex", status: specified }
+  - { id: ai.wire.azure-responses, gate: wire, reference: ["packages/ai/src/api/azure-openai-responses.ts"], rust_test: "ri_ai::wire::azure_responses", status: specified }
+  - { id: ai.wire.google, gate: wire, reference: ["packages/ai/src/api/google-generative-ai.ts"], rust_test: "ri_ai::wire::google", status: specified }
+  - { id: ai.wire.vertex, gate: wire, reference: ["packages/ai/src/api/google-vertex.ts"], rust_test: "ri_ai::wire::vertex", status: specified }
+  - { id: ai.wire.mistral, gate: wire, reference: ["packages/ai/src/api/mistral-conversations.ts"], rust_test: "ri_ai::wire::mistral", status: specified }
+  - { id: ai.wire.bedrock, gate: wire, reference: ["packages/ai/src/api/bedrock-converse-stream.ts"], rust_test: "ri_ai::wire::bedrock", status: specified }
+  - { id: ai.wire.pi-messages, gate: wire, reference: ["packages/ai/src/api/pi-messages.ts"], rust_test: "ri_ai::wire::pi_messages", status: specified }
+  - { id: ai.wire.openrouter-images, gate: wire, reference: ["packages/ai/src/api/openrouter-images.ts"], rust_test: "ri_ai::wire::openrouter_images", status: specified }
+
+  - { id: agent.events.basic, gate: agent, reference: ["packages/agent/src/agent-loop.ts"], rust_test: "ri_agent::events::basic", status: specified }
+  - { id: agent.events.tools, gate: agent, reference: ["packages/agent/src/agent-loop.ts"], rust_test: "ri_agent::events::tools", status: specified }
+  - { id: agent.events.listener-barrier, gate: agent, reference: ["packages/agent/src/agent.ts"], rust_test: "ri_agent::events::listener_barrier", status: specified }
+  - { id: agent.tools.preflight, gate: agent, reference: ["packages/agent/src/agent-loop.ts"], rust_test: "ri_agent::tools::preflight", status: specified }
+  - { id: agent.tools.parallel, gate: agent, reference: ["packages/agent/src/agent-loop.ts"], rust_test: "ri_agent::tools::parallel", status: specified }
+  - { id: agent.tools.sequential-batch, gate: agent, reference: ["packages/agent/src/agent-loop.ts"], rust_test: "ri_agent::tools::sequential_batch", status: specified }
+  - { id: agent.tools.length, gate: agent, reference: ["packages/agent/src/agent-loop.ts"], rust_test: "ri_agent::tools::length", status: specified }
+  - { id: agent.tools.terminate, gate: agent, reference: ["packages/agent/src/agent-loop.ts"], rust_test: "ri_agent::tools::terminate", status: specified }
+  - { id: agent.queue.steer, gate: agent, reference: ["packages/agent/src/agent.ts"], rust_test: "ri_agent::queue::steer", status: specified }
+  - { id: agent.queue.follow, gate: agent, reference: ["packages/agent/src/agent.ts"], rust_test: "ri_agent::queue::follow", status: specified }
+  - { id: agent.queue.continue-priority, gate: agent, reference: ["packages/agent/src/agent-loop.ts"], rust_test: "ri_agent::queue::continue_priority", status: specified }
+  - { id: agent.cancel.abort-idle, gate: agent, reference: ["packages/agent/src/agent.ts"], rust_test: "ri_agent::cancel::abort_idle", status: specified }
+
+  - { id: session.tree, gate: session_rpc, reference: ["packages/coding-agent/src/core/session-manager.ts"], rust_test: "ri_session::tree", status: implemented }
+  - { id: session.context, gate: session_rpc, reference: ["packages/agent/src/harness/session/session.ts"], rust_test: "ri_session::context", status: implemented }
+  - { id: session.leaf-durable, gate: session_rpc, reference: ["packages/agent/src/harness/session/session.ts"], rust_test: "ri_session::leaf", status: implemented }
+  - { id: session.jsonl.append, gate: session_rpc, reference: ["packages/coding-agent/src/core/session-manager.ts"], rust_test: "ri_session::jsonl", status: implemented }
+  - { id: session.pi-migration, gate: session_rpc, reference: ["packages/coding-agent/docs/session-format.md"], rust_test: "ri_compat::session", status: implemented }
+  - { id: session.sqlite.transaction, gate: session_rpc, reference: ["packages/storage/sqlite-node"], rust_test: "ri_storage_sqlite::transaction", status: implemented }
+  - { id: session.sqlite.reopen, gate: session_rpc, reference: ["packages/storage/sqlite-node"], rust_test: "ri_storage_sqlite::reopen", status: implemented }
+
+  - { id: harness.snapshot, gate: agent, reference: ["packages/agent/src/harness/agent-harness.ts"], rust_test: "ri_harness::snapshot", status: specified }
+  - { id: harness.save-point, gate: agent, reference: ["packages/agent/src/harness/agent-harness.ts"], rust_test: "ri_harness::save_point", status: specified }
+  - { id: harness.retry, gate: agent, reference: ["packages/coding-agent/src/core/agent-session.ts"], rust_test: "ri_harness::retry", status: specified }
+  - { id: harness.compaction, gate: agent, reference: ["packages/coding-agent/src/core/compaction"], rust_test: "ri_harness::compaction", status: specified }
+  - { id: harness.compaction.split-turn, gate: agent, reference: ["packages/coding-agent/src/core/compaction"], rust_test: "ri_harness::split_turn", status: specified }
+  - { id: harness.branch-summary, gate: agent, reference: ["packages/coding-agent/src/core/branch-summary.ts"], rust_test: "ri_harness::branch_summary", status: specified }
+  - { id: harness.settled, gate: agent, reference: ["packages/coding-agent/src/core/agent-session.ts"], rust_test: "ri_harness::settled", status: specified }
+
+  - { id: tools.read, gate: agent, reference: ["packages/coding-agent/src/core/tools/read.ts"], rust_test: "ri_tools::read", status: implemented }
+  - { id: tools.write, gate: agent, reference: ["packages/coding-agent/src/core/tools/write.ts"], rust_test: "ri_tools::write", status: implemented }
+  - { id: tools.edit, gate: agent, reference: ["packages/coding-agent/src/core/tools/edit.ts"], rust_test: "ri_tools::edit", status: implemented }
+  - { id: tools.bash, gate: agent, reference: ["packages/coding-agent/src/core/tools/bash.ts"], rust_test: "ri_tools::bash", status: implemented }
+  - { id: tools.grep, gate: agent, reference: ["packages/coding-agent/src/core/tools/grep.ts"], rust_test: "ri_tools::grep", status: implemented }
+  - { id: tools.find, gate: agent, reference: ["packages/coding-agent/src/core/tools/find.ts"], rust_test: "ri_tools::find", status: implemented }
+  - { id: tools.ls, gate: agent, reference: ["packages/coding-agent/src/core/tools/ls.ts"], rust_test: "ri_tools::ls", status: implemented }
+  - { id: tools.truncation, gate: transform, reference: ["packages/coding-agent/src/core/tools/truncate.ts"], rust_test: "ri_tools::truncate", status: implemented }
+
+  - { id: resources.skills, gate: transform, reference: ["packages/agent/src/harness/skills.ts"], rust_test: "ri_ext::skills", status: specified }
+  - { id: resources.prompts, gate: transform, reference: ["packages/agent/src/harness/prompt-templates.ts"], rust_test: "ri_ext::prompts", status: specified }
+  - { id: resources.context, gate: transform, reference: ["packages/coding-agent/src/core/resource-loader.ts"], rust_test: "ri_ext::context", status: specified }
+  - { id: resources.precedence, gate: transform, reference: ["packages/coding-agent/src/core/resource-loader.ts"], rust_test: "ri_ext::precedence", status: specified }
+  - { id: settings.layers, gate: session_rpc, reference: ["packages/coding-agent/src/core/settings-manager.ts"], rust_test: "ri_ext::settings", status: specified }
+  - { id: settings.flush, gate: session_rpc, reference: ["packages/coding-agent/src/core/settings-manager.ts"], rust_test: "ri_ext::settings_flush", status: specified }
+  - { id: trust.gate, gate: agent, reference: ["packages/coding-agent/src/core/project-trust.ts"], rust_test: "ri_ext::trust", status: specified }
+  - { id: extensions.reducer, gate: agent, reference: ["packages/coding-agent/src/core/extensions/runner.ts"], rust_test: "ri_ext::reducer", status: specified }
+  - { id: extensions.conflicts, gate: agent, reference: ["packages/coding-agent/src/core/extensions"], rust_test: "ri_ext::conflicts", status: specified }
+  - { id: extensions.error-isolation, gate: agent, reference: ["packages/coding-agent/src/core/extensions"], rust_test: "ri_ext::errors", status: specified }
+  - { id: extensions.stale-context, gate: agent, reference: ["packages/coding-agent/src/core/agent-session-runtime.ts"], rust_test: "ri_ext::stale", status: specified }
+  - { id: extensions.wasm.abi, gate: wire, reference: ["docs/pi-reference-analysis.md"], rust_test: "ri_ext_wasm::abi", status: specified }
+  - { id: extensions.wasm.capabilities, gate: wire, reference: ["docs/pi-reference-analysis.md"], rust_test: "ri_ext_wasm::capabilities", status: specified }
+
+  - { id: rpc.framing, gate: session_rpc, reference: ["packages/coding-agent/docs/rpc.md"], rust_test: "ri_rpc::framing", status: specified }
+  - { id: rpc.commands, gate: session_rpc, reference: ["packages/coding-agent/src/modes/rpc"], rust_test: "ri_rpc::commands", status: specified }
+  - { id: rpc.extension-ui, gate: session_rpc, reference: ["packages/coding-agent/docs/rpc.md"], rust_test: "ri_rpc::extension_ui", status: specified }
+  - { id: rpc.pi-compat, gate: session_rpc, reference: ["packages/coding-agent/docs/rpc.md"], rust_test: "ri_compat::rpc", status: specified }
+  - { id: tui.diff, gate: session_rpc, reference: ["packages/tui/src/tui.ts"], rust_test: "ri_tui::diff", status: specified }
+  - { id: tui.overlay, gate: session_rpc, reference: ["packages/tui/src/tui.ts"], rust_test: "ri_tui::overlay", status: specified }
+  - { id: tui.keys, gate: transform, reference: ["packages/tui/src/keys.ts"], rust_test: "ri_tui::keys", status: specified }
+  - { id: tui.editor, gate: session_rpc, reference: ["packages/tui/src/components/editor.ts"], rust_test: "ri_tui::editor", status: specified }
+  - { id: cli.modes-shared-runtime, gate: session_rpc, reference: ["packages/coding-agent/src/cli.ts"], rust_test: "ri_cli::modes", status: specified }
+
+out_of_scope:
+  - { id: pi-server, reason: "Experimental supervisor will be a separate crate." }
+  - { id: pi-evals-runner, reason: "Development eval infrastructure is not user runtime." }
+  - { id: typescript-extension-execution, reason: "Dynamic Rust distribution uses WASM Components." }
+  - { id: credential-auto-migration, reason: "Secrets are never copied implicitly." }

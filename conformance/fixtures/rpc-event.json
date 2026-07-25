@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "operation": "normalize",
+  "value": {
+    "type": "response",
+    "id": "rpc-request-3",
+    "command": "prompt",
+    "success": true,
+    "data": {
+      "accepted": true,
+      "queued": false
+    },
+    "elapsed": 4
+  }
+}

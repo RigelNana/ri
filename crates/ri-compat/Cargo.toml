@@ -1,0 +1,23 @@
+[package]
+name = "ri-compat"
+description = "Explicit, credential-blind Pi format compatibility"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+chrono.workspace = true
+ri-rpc = { path = "../ri-rpc" }
+ri-session = { path = "../ri-session" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true

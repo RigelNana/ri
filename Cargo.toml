@@ -1,0 +1,126 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/ri",
+    "crates/ri-ai",
+    "crates/ri-agent",
+    "crates/ri-cli",
+    "crates/ri-compat",
+    "crates/ri-conformance",
+    "crates/ri-ext",
+    "crates/ri-ext-wasm",
+    "crates/ri-harness",
+    "crates/ri-macros",
+    "crates/ri-protocol-core",
+    "crates/ri-rpc",
+    "crates/ri-sdk",
+    "crates/ri-session",
+    "crates/ri-storage-sqlite",
+    "crates/ri-testkit",
+    "crates/ri-tools",
+    "crates/ri-tui",
+]
+exclude = ["ref/pi"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/earendil-works/ri"
+homepage = "https://github.com/earendil-works/ri"
+authors = ["ri contributors"]
+categories = ["command-line-utilities", "development-tools"]
+keywords = ["agent", "ai", "llm", "sdk"]
+
+[workspace.dependencies]
+async-trait = "0.1"
+base64 = "0.22"
+bytes = "1"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["derive", "env"] }
+crossterm = { version = "0.29", features = ["bracketed-paste", "events"] }
+directories = "6"
+futures = "0.3"
+globset = "0.4"
+http = "1"
+ignore = "0.4"
+image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
+indexmap = { version = "2", features = ["serde"] }
+jsonschema = "0.48.5"
+mime_guess = "2"
+parking_lot = "0.12"
+percent-encoding = "2"
+pin-project-lite = "0.2"
+proc-macro2 = "1"
+proptest = "1"
+quote = "1"
+rand = "0.9"
+regex = "1"
+reqwest = { version = "0.13.4", default-features = false, features = ["brotli", "deflate", "gzip", "http2", "json", "native-tls", "query", "stream"] }
+ri = { path = "crates/ri" }
+ri-agent = { path = "crates/ri-agent" }
+ri-ai = { path = "crates/ri-ai" }
+ri-compat = { path = "crates/ri-compat" }
+ri-ext = { path = "crates/ri-ext" }
+ri-ext-wasm = { path = "crates/ri-ext-wasm" }
+ri-harness = { path = "crates/ri-harness" }
+ri-macros = { path = "crates/ri-macros" }
+ri-protocol-core = { path = "crates/ri-protocol-core" }
+ri-rpc = { path = "crates/ri-rpc" }
+ri-sdk = { path = "crates/ri-sdk" }
+ri-session = { path = "crates/ri-session" }
+ri-storage-sqlite = { path = "crates/ri-storage-sqlite" }
+ri-testkit = { path = "crates/ri-testkit" }
+ri-tools = { path = "crates/ri-tools" }
+ri-tui = { path = "crates/ri-tui" }
+rusqlite = { version = "0.40.1", features = ["bundled", "chrono", "serde_json", "uuid"] }
+schemars = { version = "1", features = ["chrono04", "uuid1"] }
+semver = "1"
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = { version = "1", features = ["preserve_order", "raw_value"] }
+serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
+sha2 = "0.10"
+similar = "2"
+tempfile = "3"
+thiserror = "2"
+toml = "0.9"
+tokio = { version = "1", features = ["fs", "io-util", "macros", "net", "process", "rt-multi-thread", "signal", "sync", "time"] }
+tokio-stream = { version = "0.1", features = ["io-util", "sync"] }
+tokio-util = { version = "0.7", features = ["codec", "io", "rt"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
+trybuild = "1"
+tungstenite = "0.27"
+syn = { version = "2", features = ["full", "extra-traits"] }
+unicode-segmentation = "1"
+unicode-normalization = "0.1"
+unicode-width = "0.2"
+url = { version = "2", features = ["serde"] }
+uuid = { version = "1", features = ["serde", "v4", "v7"] }
+walkdir = "2"
+wasmtime = { version = "47.0.1", features = ["async", "component-model"] }
+wasmtime-wasi = "47.0.1"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+missing_docs = "warn"
+rust_2018_idioms = { level = "deny", priority = -1 }
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+too_many_lines = "allow"
+type_complexity = "allow"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+
+[profile.dev.package."*"]
+opt-level = 1

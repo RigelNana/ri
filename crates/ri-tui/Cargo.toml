@@ -1,0 +1,21 @@
+[package]
+name = "ri-tui"
+description = "Safe terminal UI primitives and differential renderer for ri"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+base64.workspace = true
+crossterm.workspace = true
+image.workspace = true
+thiserror.workspace = true
+unicode-segmentation.workspace = true
+unicode-width.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true

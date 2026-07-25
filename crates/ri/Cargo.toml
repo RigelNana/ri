@@ -1,0 +1,33 @@
+[package]
+name = "ri"
+description = "Native Rust SDK for the Pi-compatible agent stack"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = []
+sqlite = ["ri-sdk/sqlite"]
+wasm = ["ri-sdk/wasm"]
+full = ["sqlite", "wasm"]
+
+[dependencies]
+async-trait.workspace = true
+ri-agent.workspace = true
+ri-ai.workspace = true
+ri-ext.workspace = true
+ri-harness.workspace = true
+ri-macros.workspace = true
+ri-sdk.workspace = true
+ri-session.workspace = true
+ri-tools.workspace = true
+
+[dev-dependencies]
+schemars.workspace = true
+serde.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true

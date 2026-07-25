@@ -23,7 +23,6 @@ jobs:
         with:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
-      - uses: taiki-e/install-action@nextest
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Check workspace
@@ -31,7 +30,7 @@ jobs:
       - name: Run Clippy
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
       - name: Run tests
-        run: cargo nextest run --workspace --all-features
+        run: cargo test --workspace --all-features
       - name: Run documentation tests
         run: cargo test --workspace --all-features --doc
       - name: Build documentation
